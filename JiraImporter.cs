@@ -1,6 +1,7 @@
 ﻿using DirectumToJira.libraries;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,14 +14,23 @@ namespace DirectumToJira
         private readonly AtbCalendar _atbCalendar;
         private readonly DirectumIssueStrategy _directumIssueStrategy;
         private readonly DirectumRegistryChangeStrategy _directumRegistryChangeStrategy;
+        private readonly IEnumerable<IDirectumIssueStrategyImport> _strategies;
 
         public JiraImporter(NLog.ILogger logger,
-             AtbCalendar atbCalendar, DirectumIssueStrategy directumIssueStrategy, DirectumRegistryChangeStrategy directumRegistryChangeStrategy)
+             AtbCalendar atbCalendar, 
+//             DirectumIssueStrategy directumIssueStrategy, DirectumRegistryChangeStrategy directumRegistryChangeStrategy,
+             IEnumerable<IDirectumIssueStrategyImport> strategies
+             )
         {
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _atbCalendar = atbCalendar ?? throw new ArgumentNullException(nameof(atbCalendar));
-            _directumIssueStrategy = directumIssueStrategy ?? throw new ArgumentNullException(nameof(directumIssueStrategy));
-            _directumRegistryChangeStrategy = directumRegistryChangeStrategy ?? throw new ArgumentNullException(nameof(directumRegistryChangeStrategy));
+            _logger = logger; 
+            _atbCalendar = atbCalendar; 
+            _strategies = strategies;
+        }
+
+        public string Foo()
+        {
+            Debug.Assert(_strategies.Count() == 2);
+            return _strategies.Count().ToString();
         }
 
         public void Import(DateTime dateCreation, DirectumIssuesFilter filter)
@@ -36,8 +46,9 @@ namespace DirectumToJira
             }
             try
             {
-                _directumIssueStrategy.Import(logHelper, dateCreation, filter);
-                _directumRegistryChangeStrategy.Import(logHelper, dateCreation, filter);
+                _strategies
+                    .ToList()
+                    .ForEach(_ => _.Import(logHelper, dateCreation, filter));
 
             }
             catch (Exception ex)

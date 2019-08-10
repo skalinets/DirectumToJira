@@ -18,8 +18,8 @@ namespace DirectumToJira.libraries
         /// <returns></returns>
 
 
-        string CreateIssue(IssueByCreate issueCr);
-        string CreateRegistryItem(ItemByCreate registryItemCr);
+        Task<string> CreateIssueAsync(IssueByCreate issueCr);
+        Task<string> CreateRegistryItemAsync(ItemByCreate registryItemCr);
         string ChangeStatus(string IssueKey, int StatusId);
         List<IssueType> GetTypes();
         IEnumerable<Issue> GetIssues(GetIssuesFilter filter);

@@ -7,93 +7,66 @@ using System.Threading.Tasks;
 
 namespace DirectumToJira
 {
-    class DirectumRegistryChangeStrategy : DirectumIssueStrategyImport
+    class DirectumRegistryChangeStrategy : DirectumIssueStrategyBase<ItemByCreate>
     {
-        private const string PROJECT_ID = "CH";
-
-        private readonly DirectumToJiraMapper _directumToJiraMapper;
-
         public DirectumRegistryChangeStrategy(IJiraProvider jiraProvider, IDirectumJiraExchangeProvider directumJiraExchangeProvider,
             DirectumToJiraMapper directumToJiraMapper)
-            : base(jiraProvider, directumJiraExchangeProvider)
+            : base(jiraProvider, directumJiraExchangeProvider, directumToJiraMapper)
         {
-            _directumToJiraMapper = directumToJiraMapper;
-        }
-        protected override void GetIssuesFromDb(DirectumIssuesFilter _filter, DateTime _dateCreation, LogHelper _logHelper)
-        {
-            _logHelper.Info($"Начало обработки {DateTime.Now}");
-
-            IssuesByCreateBase = _directumJiraExchangeProvider
-                                .GetRegistryItems(_filter)
-                                .Where(item => item.Deadline.Date != _dateCreation.Date)
-                                .Select(directumRegistryItem => _directumToJiraMapper.MapItem(directumRegistryItem, _logHelper))
-                                .ToArray();
-
-            _logHelper.Info($"Получено задач реестра изменений на {_filter.EndDate}: {IssuesByCreateBase.Count()}");
         }
 
+        protected override string PROJECT_ID => "CH";
 
-        private void ValidateItemByCreate(ItemByCreate itemByCreate, string[] existJiraIssueKeys)
+
+        protected override ItemByCreate[] GetIssues(DirectumIssuesFilter _filter, DateTime _dateCreation, LogHelper _logHelper)
         {
-            ValidateIssueByCreate(itemByCreate, existJiraIssueKeys);
+            return _directumJiraExchangeProvider
+                .GetRegistryItems(_filter)
+                .Where(item => item.Deadline.Date != _dateCreation.Date)
+                .Select(directumRegistryItem => _directumToJiraMapper.MapItem(directumRegistryItem, _logHelper))
+                .ToArray();
+        }
 
-            if (string.IsNullOrWhiteSpace(itemByCreate.Summary))
+        protected override string GetMessage(ItemByCreate issueByCreate)
+        {
+            return $"{issueByCreate.Summary} DeadLine:{issueByCreate.DeadLine} Project:{issueByCreate.SourceNumber}";
+        }
+
+        protected override Task<string> CreateInJira(ItemByCreate item)
+        {
+            return _jiraProvider.CreateRegistryItemAsync(item);
+        }
+
+        protected override void ValidateIssueByCreate(ItemByCreate issue, string[] existJiraIssueKeys)
+        {
+            base.ValidateIssueByCreate(issue, existJiraIssueKeys);
+
+            if (string.IsNullOrWhiteSpace(issue.Summary))
                 throw new ArgumentException($"Тема не определена");
 
-            if (string.IsNullOrWhiteSpace(itemByCreate.IssueType))
+            if (string.IsNullOrWhiteSpace(issue.IssueType))
                 throw new ArgumentException($"Тип запроса не определён");
 
-            if (string.IsNullOrWhiteSpace(itemByCreate.ChangeManager))
+            if (string.IsNullOrWhiteSpace(issue.ChangeManager))
                 throw new ArgumentException($"Менеджер изменения не определён");
 
-            if (string.IsNullOrWhiteSpace(itemByCreate.ConsequencesFailureImplement))
+            if (string.IsNullOrWhiteSpace(issue.ConsequencesFailureImplement))
                 throw new ArgumentException($"Последствия от невнедрения не определены");
 
-            if (string.IsNullOrWhiteSpace(itemByCreate.Description))
+            if (string.IsNullOrWhiteSpace(issue.Description))
                 throw new ArgumentException($"Описание не определено");
 
-            if (string.IsNullOrWhiteSpace(itemByCreate.Priority))
+            if (string.IsNullOrWhiteSpace(issue.Priority))
                 throw new ArgumentException($"Приоритет инициатора не определён");
 
-            if (string.IsNullOrWhiteSpace(itemByCreate.DepartmentId))
+            if (string.IsNullOrWhiteSpace(issue.DepartmentId))
                 throw new ArgumentException($"Подразделение ИТ не определено");
 
-            if (string.IsNullOrWhiteSpace(itemByCreate.Initiator))
+            if (string.IsNullOrWhiteSpace(issue.Initiator))
                 throw new ArgumentException($"Инициатор не определён");
 
-            if (string.IsNullOrWhiteSpace(itemByCreate.ReasonImplementation))
+            if (string.IsNullOrWhiteSpace(issue.ReasonImplementation))
                 throw new ArgumentException($"Основание не определено");
         }
-        protected override CreateIssueResult CreateIssue(IssueByCreateBase issueByCreateBase, string[] existJiraRegistryItemKeys, LogHelper _logHelper)
-        {
-            var itemByCreate = (ItemByCreate)issueByCreateBase;
-
-            var result = new CreateIssueResult
-            {
-                AssignmentId = Convert.ToInt32(itemByCreate.SourceNumber),
-                Project = PROJECT_ID
-            };
-
-
-            try
-            {
-                _logHelper.Info($"{itemByCreate.Summary} DeadLine:{itemByCreate.DeadLine} Project:{itemByCreate.SourceNumber}");
-                ValidateItemByCreate(itemByCreate, existJiraRegistryItemKeys);
-
-                result.IssueKey = _jiraProvider.CreateRegistryItem(itemByCreate);
-                _logHelper.Info($"Успешно создали задачу: {result.IssueKey}\n");
-                result.TaskStatusCode = InternalState.Complete;
-            }
-
-            catch (Exception e)
-            {
-                result.TaskStatusCode = InternalState.Error;
-                result.ErrorText = e.Message;
-
-                _logHelper.Error(e);
-            }
-            return result;
-        }
-
     }
 }

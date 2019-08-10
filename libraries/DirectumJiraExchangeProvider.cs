@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 
 namespace DirectumToJira.libraries
 {
-    class DirectumJiraExchangeProvider
+    class DirectumJiraExchangeProvider : IDirectumJiraExchangeProvider
     {
-        private ConnectionStringSettings directumJiraExchange;
+        private string directumJiraExchange;
 
-        public DirectumJiraExchangeProvider(ConnectionStringSettings directumJiraExchange)
+        public DirectumJiraExchangeProvider(string directumJiraExchange)
         {
             this.directumJiraExchange = directumJiraExchange;
         }

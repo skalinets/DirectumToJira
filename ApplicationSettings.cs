@@ -12,9 +12,12 @@ namespace DirectumToJira
     {
         public const string WorkDaysEndpointName = "ServiceWorkDays";
         public const string JiraEndpointName = "ServiceJira";
+        public const string JiraEndpointName2 = "ServiceJira2";
         public const string EmployeeEndpointName = "ServiceItUsers";
-        public static ConnectionStringSettings DirectumJiraExchange { get; } = ConfigurationManager.ConnectionStrings["DirectumJiraExchange"];
-        public static TimeSpan LivePollingPeriod { get; } = TimeSpan.FromMinutes(Convert.ToDouble(ConfigurationManager.AppSettings["LivePollingPeriodMinutes"], CultureInfo.InvariantCulture));
-        public static TimeSpan BylawPollingTime { get; } = TimeSpan.Parse(ConfigurationManager.AppSettings["BylawPollingTime"], CultureInfo.InvariantCulture);
+        public static string DirectumJiraExchange { get; } = "foo"; 
+        
+        //ConfigurationManager.ConnectionStrings["DirectumJiraExchange"];
+        public static TimeSpan LivePollingPeriod { get; } = TimeSpan.FromMinutes(1);
+        public static TimeSpan BylawPollingTime { get; } = TimeSpan.Zero;
     }
 }

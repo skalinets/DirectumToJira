@@ -6,11 +6,6 @@ using System.Threading.Tasks;
 
 namespace DirectumToJira.libraries
 {
-    interface IWorkDayProvider
-    {
-        bool CheckDateIsWork(DateTime requestedDate, bool fromCash);
-    }
-
     class WorkDayProvider : IWorkDayProvider
     {
         private string workDaysEndpointName;

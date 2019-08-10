@@ -87,29 +87,32 @@ namespace DirectumToJira
         }
         private (string issueType, string priorityInitiator, string department) CheckAndReturnCatalogs(string project, DirectumRegistryItem directumRegistryItem, IssueType issueType, LogHelper logHelper)
         {
-            //var catalog = _jiraProvider.GetCataloges(project);
-            //var catalogIssueTypeResult = catalog.Issuetype.FirstOrDefault(i => i.Name == issueType.Name)?.Id.ToString();
-            //if (catalogIssueTypeResult == null)
-            //{
-            //    logHelper.Error(new ArgumentException($"Тип запроса \"{issueType.Name}\" не определён в справочнике JIRA"));
-            //}
+            var catalog = _jiraProvider.GetCataloges(project);
+            var catalogIssueTypeResult = catalog.Issuetype.FirstOrDefault(i => i.Name == issueType.Name)?.Id.ToString();
 
 
-            //var catalogPriorityResult = catalog.PriorityInitiator.FirstOrDefault(p => p.Name == directumRegistryItem.PriorityInitiatorId)?.Id.ToString();
-            //if (catalogPriorityResult == null)
-            //{
-            //    logHelper.Error(new ArgumentException($"Приоритет \"{directumRegistryItem.PriorityInitiatorId}\" не определён в справочнике JIRA"));
-            //}
+
+            if (catalogIssueTypeResult == null)
+            {
+                logHelper.Error(new ArgumentException($"Тип запроса \"{issueType.Name}\" не определён в справочнике JIRA"));
+            }
 
 
-            //var catalogDepartmentResult = catalog.DepartIt.FirstOrDefault(d => d.Name == directumRegistryItem.DepartmentITId)?.Id.ToString();
-            //if (catalogDepartmentResult == null)
-            //{
-            //    logHelper.Error(new ArgumentException($"Подразделение ИТ \"{directumRegistryItem.DepartmentITId}\" не определено в справочнике JIRA"));
-            //}
+            var catalogPriorityResult = catalog.PriorityInitiator.FirstOrDefault(p => p.Name == directumRegistryItem.PriorityInitiatorId)?.Id.ToString();
+            if (catalogPriorityResult == null)
+            {
+                logHelper.Error(new ArgumentException($"Приоритет \"{directumRegistryItem.PriorityInitiatorId}\" не определён в справочнике JIRA"));
+            }
 
-            //return (catalogIssueTypeResult, catalogPriorityResult, catalogDepartmentResult);
-            return (null, null, null);
+
+            var catalogDepartmentResult = catalog.DepartIt.FirstOrDefault(d => d.Name == directumRegistryItem.DepartmentITId)?.Id.ToString();
+            if (catalogDepartmentResult == null)
+            {
+                logHelper.Error(new ArgumentException($"Подразделение ИТ \"{directumRegistryItem.DepartmentITId}\" не определено в справочнике JIRA"));
+            }
+
+            return (catalogIssueTypeResult, catalogPriorityResult, catalogDepartmentResult);
+            //return (null, null, null);
         }
     }
 }

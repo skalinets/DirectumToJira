@@ -69,7 +69,7 @@
     <Compile Include="DBDataProvider.cs" />
     <Compile Include="DirectumIssuesFilter.cs" />
     <Compile Include="DirectumIssueStrategy.cs" />
-    <Compile Include="DirectumIssueStrategyImport.cs" />
+    <Compile Include="DirectumIssueStrategyBase.cs" />
     <Compile Include="DirectumRegistryChangeStrategy.cs" />
     <Compile Include="DirectumToJiraMapper.cs" />
     <Compile Include="IWorkDayProvider.cs" />
